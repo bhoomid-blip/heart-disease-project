@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Heart Disease Predictor</title>
+
+<style>
+*{
+    margin:0;
+    padding:0;
+    box-sizing:border-box;
+    font-family:'Segoe UI',sans-serif;
+}
+
+body{
+    min-height:100vh;
+    background:linear-gradient(135deg,#f3ecff,#d9c7ff,#bca7ff);
+    display:flex;
+    justify-content:center;
+    align-items:center;
+}
+
+/* soft glow background */
+body::before{
+    content:"";
+    position:fixed;
+    width:500px;
+    height:500px;
+    background:#a78bfa;
+    filter:blur(140px);
+    opacity:.35;
+    top:-150px;
+    right:-150px;
+    z-index:-1;
+}
+
+/* card */
+.card{
+    width:420px;
+    background:rgba(255,255,255,.88);
+    backdrop-filter:blur(12px);
+    border-radius:24px;
+    padding:34px;
+    text-align:center;
+    box-shadow:0 30px 70px rgba(124,92,255,.25);
+    animation:fadeUp .6s ease;
+}
+
+@keyframes fadeUp{
+    from{opacity:0; transform:translateY(25px);}
+    to{opacity:1; transform:translateY(0);}
+}
+
+.card h1{
+    color:#5f3dc4;
+    margin-bottom:6px;
+}
+
+.subtitle{
+    color:#7b6cf6;
+    font-size:14px;
+    margin-bottom:26px;
+}
+
+/* inputs */
+.input-group{
+    text-align:left;
+    margin-bottom:16px;
+}
+
+.input-group label{
+    font-size:14px;
+    color:#4c3fb1;
+    font-weight:600;
+}
+
+input,select{
+    width:100%;
+    padding:11px;
+    margin-top:6px;
+    border-radius:10px;
+    border:2px solid #e5dbff;
+    outline:none;
+    background:#faf8ff;
+    transition:.25s;
+}
+
+input:focus,select:focus{
+    border-color:#8b6cff;
+    box-shadow:0 0 0 3px rgba(139,108,255,.15);
+}
+
+/* button */
+.predict-btn{
+    width:100%;
+    padding:14px;
+    margin-top:12px;
+    border:none;
+    border-radius:12px;
+    background:linear-gradient(135deg,#8b6cff,#6f4df5);
+    color:white;
+    font-size:16px;
+    font-weight:600;
+    cursor:pointer;
+    transition:.25s;
+}
+
+.predict-btn:hover{
+    transform:translateY(-2px);
+    box-shadow:0 15px 30px rgba(111,77,245,.35);
+}
+
+/* result */
+.result-box{
+    margin-top:22px;
+    padding:14px;
+    border-radius:12px;
+    font-weight:bold;
+    display:none;
+}
+
+.result-box.loading{
+    display:block;
+    background:rgba(111,77,245,.12);
+    color:#5f3dc4;
+}
+
+.result-box.safe{
+    display:block;
+    background:rgba(46,204,113,.15);
+    color:#1b8a4b;
+}
+
+.result-box.danger{
+    display:block;
+    background:rgba(231,76,60,.15);
+    color:#c0392b;
+}
+</style>
+
+</head>
+
+<body>
+
+<div class="card">
+    <h1>💜 Heart Disease Predictor</h1>
+    <p class="subtitle">AI-powered medical risk analysis</p>
+
+```
+<form id="predictForm">
+
+    <div class="input-group">
+        <label>Age</label>
+        <input type="number" id="age" placeholder="Enter age" required>
+    </div>
+
+    <div class="input-group">
+        <label>Sex</label>
+        <select id="sex" required>
+            <option value="">Select</option>
+            <option value="0">Female</option>
+            <option value="1">Male</option>
+        </select>
+    </div>
+
+    <div class="input-group">
+        <label>Blood Pressure</label>
+        <input type="number" id="bp" placeholder="e.g. 120" required>
+    </div>
+
+    <div class="input-group">
+        <label>Cholesterol</label>
+        <input type="number" id="cholestrol" placeholder="e.g. 200" required>
+    </div>
+
+    <button type="submit" class="predict-btn">🔮 Predict Risk</button>
+</form>
+
+<div id="resultBox" class="result-box"></div>
+```
+
+</div>
+
+<script>
+document.getElementById("predictForm").addEventListener("submit", async function(e){
+    e.preventDefault();
+
+    const resultBox=document.getElementById("resultBox");
+    resultBox.className="result-box loading";
+    resultBox.innerHTML="⏳ Analyzing patient data...";
+
+    const data={
+        age:document.getElementById("age").value,
+        sex:document.getElementById("sex").value,
+        bp:document.getElementById("bp").value,
+        cholestrol:document.getElementById("cholestrol").value
+    };
+
+    try{
+        const response=await fetch("/predict",{
+            method:"POST",
+            headers:{"Content-Type":"application/json"},
+            body:JSON.stringify(data)
+        });
+
+        const result=await response.json();
+
+        if(result.result.includes("Detected")){
+            resultBox.className="result-box danger";
+            resultBox.innerHTML="⚠️ "+result.result;
+        }else{
+            resultBox.className="result-box safe";
+            resultBox.innerHTML="✅ "+result.result;
+        }
+
+    }catch(err){
+        resultBox.className="result-box danger";
+        resultBox.innerHTML="❌ Server connection failed";
+    }
+});
+</script>
+
+</body>
+</html>
